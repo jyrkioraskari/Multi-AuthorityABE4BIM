@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fi.aalto.lbd.abe</groupId>
+	<artifactId>lbdabe</artifactId>
+	<version>1.0</version>
+	<name>LBE ABE</name>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+		<repository>
+			<id>rhazdev</id>
+			<url>https://mymavenrepo.com/repo/NIp3fBk55f5oF6VI1Wso/</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>sg.edu.ntu.sce.sands.crypto</groupId>
+			<artifactId>dcpabe</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ipfs</groupId>
+			<artifactId>java-ipfs-api</artifactId>
+			<version>v1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.rhaz.ipfs</groupId>
+			<artifactId>ipfs-daemon</artifactId>
+			<version>1.0.8</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+</project>
