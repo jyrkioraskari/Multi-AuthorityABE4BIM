@@ -1,13 +1,10 @@
 package fi.aalto.lbd;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Optional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fi.aalto.lbd.lib.AaltoIPFSConnection;
 import io.ipfs.api.MerkleNode;
@@ -36,9 +33,9 @@ public class AaltoABEGlobal {
 		System.out.println("Global Parameters 1");
 		Multihash filePointer = Multihash.fromBase58(global_parameters_hash);
 		try {
-			ByteArrayInputStream bis = new ByteArrayInputStream(this.ipfs_connection.cat(filePointer));
-			ObjectInputStream in = new ObjectInputStream(bis);
-			optional_gp = Optional.ofNullable((GlobalParameters) in.readObject());
+			String contents = new String(this.ipfs_connection.cat(filePointer));
+			optional_gp = Optional.ofNullable( new ObjectMapper().readerFor(GlobalParameters.class).readValue(contents));
+
 			if(this.ipfs_connection.getIpfs().isPresent())
 			   this.ipfs_connection.getIpfs().get().pin.add(filePointer);
 		} catch (Exception e) {
@@ -48,18 +45,13 @@ public class AaltoABEGlobal {
 			try {
 				optional_gp = Optional.ofNullable(DCPABE.globalSetup(160));
 
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream out = new ObjectOutputStream(bos);
-				out.writeObject(optional_gp.get());
-				out.flush();
-
-				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", bos.toByteArray());
+				String json_string = new ObjectMapper().writeValueAsString(optional_gp.get());
+				System.out.println("GP json string: "+json_string);
+				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", json_string.getBytes());
 				List<MerkleNode> node = ipfs_connection.add(file);
 				System.out.println("Global parameters hash: " + node.get(0).hash.toBase58());
 				AaltoABEGlobal.global_parameters_hash = node.get(0).hash.toBase58();
-			} catch (FileNotFoundException e) {
-				System.err.println(e.getMessage());
-			} catch (IOException e) {
+			}catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -72,16 +64,13 @@ public class AaltoABEGlobal {
 			try {
 				optional_gp = Optional.ofNullable(DCPABE.globalSetup(160));
 
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream out = new ObjectOutputStream(bos);
-				out.writeObject(optional_gp.get());
-				out.flush();
-
-				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", bos.toByteArray());
+				String json_string = new ObjectMapper().writeValueAsString(optional_gp.get());
+				System.out.println("GP json string: "+json_string);
+				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", json_string.getBytes());
 				List<MerkleNode> node = ipfs_connection.add(file);
+				System.out.println("Global parameters hash: " + node.get(0).hash.toBase58());
+				AaltoABEGlobal.global_parameters_hash = node.get(0).hash.toBase58();
 				System.out.println("Directory hash: " + node.get(0).hash.toBase58());
-			} catch (FileNotFoundException e) {
-				System.err.println(e.getMessage());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

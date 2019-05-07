@@ -169,6 +169,8 @@ public class AaltoABEPublisher extends AaltoABEActor {
 
 				encryptOrDecryptPayload(aes, bis, out);
 				out.flush();
+				//System.out.println("Publish: "+bos.toString());
+				//System.exit(1);
 				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", bos.toByteArray());
 				List<MerkleNode> node = ipfs.add(file);
 				if (node.isEmpty()) {

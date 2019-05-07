@@ -114,9 +114,13 @@ public class AaltoABEAuthenticator extends AaltoABEActor {
 
 	private void readAuthorityFileSerialization(String authority_file) {
 		try {
+			System.out.println("Read auth file: "+authority_file);
 			String contents = new String(Files.readAllBytes(Paths.get((new File(authority_file)).toURI())));
 			this.ak = new ObjectMapper().readerFor(AuthorityKeys.class).readValue(contents);
-
+						
+			System.out.println("ID: "+this.ak.getAuthorityID());
+			for(String key:this.ak.getPublicKeys().keySet())	
+				System.out.println("a key: "+key);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -3,6 +3,9 @@ package org.lbd;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -17,20 +20,73 @@ public class IPFS_ABEFetchDir {
 	private final Model guid_directory_model = ModelFactory.createDefaultModel();
 	private final Model temp_model = ModelFactory.createDefaultModel();
 
-	private final AaltoABEAuthenticator authority;
 	private final AaltoABEUser user;
 
-	public IPFS_ABEFetchDir(String dir_hash) {
-		this.merkle_node = guid_directory_model.createProperty("http://ipfs/merkle_node");
-		this.authority = new AaltoABEAuthenticator("QmezCbZRUjwHqThpcsyF7sjNy2sjvqtCtzreetSFRywHsw");
-		this.user = new AaltoABEUser("QmezCbZRUjwHqThpcsyF7sjNy2sjvqtCtzreetSFRywHsw");
+	public IPFS_ABEFetchDir(String directory,int attribute_count,String gp_hash) {
 		
-		String keya_base64 = authority.userKeyGenBase64String(user.getName(), "a");
-		user.addPrivateKeyString(keya_base64);
-		String keyb_base64 = authority.userKeyGenBase64String(user.getName(), "b");
-		user.addPrivateKeyString(keyb_base64);
+		List<String> attributes = new ArrayList<>();
+		System.out.println("attributes: " + attribute_count);
+		char c = 'a';
 
-		fetch(dir_hash);
+		for (int i = 0; i < attribute_count; i++) {
+			char ch = (char) (c + i);
+			attributes.add("" + ch);
+		}
+		System.out.println(attributes);
+		this.merkle_node = guid_directory_model.createProperty("http://ipfs/merkle_node");
+		this.user = new AaltoABEUser(gp_hash);
+		
+		List<AaltoABEAuthenticator> authorities = new ArrayList<>();
+		for (int i = 0; i < attribute_count; i++) {
+			String[] author_attributes = { "" + attributes.get(i) };
+			AaltoABEAuthenticator authority=new AaltoABEAuthenticator(gp_hash, "" + i+""+attribute_count, author_attributes, true);
+			authorities.add(authority);
+			String keya_base64 = authority.userKeyGenBase64String(user.getName(), attributes.get(i));
+			user.addPrivateKeyString(keya_base64);
+		}
+		
+
+		File curDir = new File(directory);
+		File[] filesList = curDir.listFiles();
+		for (File f : filesList) {
+			if (f.isFile()) {
+				handleFile(f,attribute_count);
+			}
+		}
+		//fetch(dir_hash);
+	}
+
+	private void handleFile(File f, int attribute_count) {
+		if(!f.getName().startsWith("Publishing"))
+			return;
+		String[] filename=f.getName().split("_");
+		if(filename.length>=4)
+		{
+			if(filename[1].equals(""+2)&&filename[4].equals(""+attribute_count))
+			{  
+				System.out.println(f.getName());
+				Scanner sc;
+				try {
+					sc = new Scanner(f);
+					sc.useDelimiter("\n");
+
+					while (sc.hasNext()) {
+						String line = sc.next();
+						if (line.startsWith("Round ")) {
+							String[] s = line.split(" ");
+							System.out.println(s[8]);
+							fetch(s[8]);
+						}
+					}
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+		
 	}
 
 	public void fetch(String dir_hash) {
@@ -51,6 +107,8 @@ public class IPFS_ABEFetchDir {
 	private void readInNode(String key) {
 		temp_model.removeAll();
 		String content = this.user.decrypt(key);
+		if(content==null)
+			return;
 		System.out.println("element:\n "+content);
 		ByteArrayInputStream bi = new ByteArrayInputStream(content.getBytes());
 		temp_model.read(bi, null, "TTL");
@@ -67,8 +125,14 @@ public class IPFS_ABEFetchDir {
 	}
 
 	public static void main(String[] args) {
-		String hash = "QmU4wtrto3x5PnN7PYyjrUJyaHVYnZDGQiCYHKmYGWiJL7";
-		new IPFS_ABEFetchDir(hash);
+		if(args.length==2)
+		{
+			int start = 9;
+			for (int attribute_count = start; attribute_count >= 0; attribute_count--)
+		      new IPFS_ABEFetchDir(args[0],attribute_count,args[1]);
+		}
+		else
+		  System.out.println("Usage: java -jar main.jar dir global_parameter_ipfs_hash");	
 	}
 
 }

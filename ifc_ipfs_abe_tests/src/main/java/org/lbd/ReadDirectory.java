@@ -79,8 +79,7 @@ public class ReadDirectory {
 		}
 	public static void main(String[] args) {
 
-		new ReadDirectory(
-				"C:\\Users\\kiori\\OneDrive - Aalto University\\Research\\Attribute-based encrption for role based authentication for IFC-IPFS\\measurements\\3");
+		new ReadDirectory("C:\\Users\\kiori\\OneDrive - Aalto University\\Research\\Attribute-based encyption for role based authentication for IFC-IPFS\\measurements\\3");
 
 	}
 

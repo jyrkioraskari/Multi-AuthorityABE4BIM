@@ -27,21 +27,21 @@ import fi.aalto.lbd.AaltoABEPublisher;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 
-public class IFCtoIPFS_TestABECommon extends IPFS_Logging {	
-	private final CanonizedPattern canonized_pattern = new CanonizedPattern();
-	private final Random random_number_generator = new Random(System.currentTimeMillis());
-	private final String project_name;
-	private final String baseURI = "http://ipfs/bim/";
+public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {	
+	protected final CanonizedPattern canonized_pattern = new CanonizedPattern();
+	protected final Random random_number_generator = new Random(System.currentTimeMillis());
+	protected final String project_name;
+	protected final String baseURI = "http://ipfs/bim/";
 
 	protected final int attribute_count;
-	private final Model jena_guid_directory_model = ModelFactory.createDefaultModel();
-	private final Property jena_property_random;
-	private final Property jena_property_merkle_node;
-	public AaltoABEPublisher publisher;
+	protected final Model jena_guid_directory_model = ModelFactory.createDefaultModel();
+	protected final Property jena_property_random;
+	protected final Property jena_property_merkle_node;
+	protected AaltoABEPublisher publisher;
 	final public StringBuilder encryption_policy = new StringBuilder();
 
 	
-	public IFCtoIPFS_TestABECommon(String project_name, int attribute_count) {
+	public IFCtoIPFS_TestABEPublishCommon(String project_name, int attribute_count) {
 		super();
 		this.attribute_count = attribute_count;
 		this.jena_property_random = jena_guid_directory_model.createProperty("http://ipfs/random");
@@ -52,7 +52,7 @@ public class IFCtoIPFS_TestABECommon extends IPFS_Logging {
 
 	protected void add(String ifc_file) throws InterruptedException, IOException {
 		String fn = new File(ifc_file).getName();
-		this.node = "Publishing_" + fn + "_" + this.attribute_count;
+		this.node = "Publishing_"+project_name+"_" + fn + "_" + this.attribute_count;
 		timelog.clear();
 		Splitted_IfcOWL ifcrdf = new Splitted_IfcOWL(ifc_file);
 		long start;

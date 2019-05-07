@@ -108,7 +108,7 @@ public class AaltoABEUser extends AaltoABEActor {
 		try {
 			String json_string = new ObjectMapper().writeValueAsString(pks);
 			System.out.println(json_string);
-			 Files.write(Paths.get(user_keys_serialization_file.toURI()), json_string.getBytes());
+			Files.write(Paths.get(user_keys_serialization_file.toURI()), json_string.getBytes());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -128,7 +128,7 @@ public class AaltoABEUser extends AaltoABEActor {
 		try {
 			String json_string = new ObjectMapper().writeValueAsString(pks);
 			System.out.println(json_string);
-			 Files.write(Paths.get(user_keys_serialization_file.toURI()), json_string.getBytes());
+			Files.write(Paths.get(user_keys_serialization_file.toURI()), json_string.getBytes());
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -158,12 +158,36 @@ public class AaltoABEUser extends AaltoABEActor {
 			try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					BufferedOutputStream out = new BufferedOutputStream(bos)) {
 				encryptOrDecryptPayload(aes, oIn, out);
+
 				out.flush();
 				return new String(bos.toByteArray());
+			} catch (InvalidCipherTextException e) {
+				System.err.println("Global parameter missmatch?: " + e.getMessage() + " " + e.getClass().getName());
+				e.printStackTrace();
+				try {
+					String content = new String(ipfs.cat(filePointer));
+					System.out.println("1. tried to decrypt: " + content);
+					System.exit(1);
+				} catch (TimeoutException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
 			}
-		} catch (IOException | ClassNotFoundException | DataLengthException | IllegalStateException
-				| InvalidCipherTextException e) {
-			System.err.println(e.getMessage());
+			return null;
+		} catch (IOException | ClassNotFoundException | DataLengthException | IllegalStateException e) {
+			System.err.println("Global parameter missmatch?: " + e.getMessage() + " " + e.getClass().getName());
+
+			
+			try {
+				String content = new String(ipfs.cat(filePointer));
+				System.out.println("2. tried to decrypt: " + content);
+				System.exit(1);
+			} catch (TimeoutException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
 			e.printStackTrace();
 			return null;
 		} catch (MessagingException e1) {
@@ -187,7 +211,15 @@ public class AaltoABEUser extends AaltoABEActor {
 			int length1 = cipher.processBytes(inBuff, 0, nbytes, outBuff, 0);
 			os.write(outBuff, 0, length1);
 		}
+		System.out.println("outlen: "+outBuff.length);
+		System.out.println("bs: "+cipher.getBlockSize());
+		try {
 		nbytes = cipher.doFinal(outBuff, 0);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("castle nbytes: "+nbytes);
 		os.write(outBuff, 0, nbytes);
 	}
 
