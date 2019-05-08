@@ -162,7 +162,7 @@ public class AaltoABEUser extends AaltoABEActor {
 				out.flush();
 				return new String(bos.toByteArray());
 			} catch (InvalidCipherTextException e) {
-				System.err.println("Global parameter missmatch?: " + e.getMessage() + " " + e.getClass().getName());
+				System.err.println("Global parameter missmatch/Authenticator regenerated?: " + e.getMessage() + " " + e.getClass().getName());
 				e.printStackTrace();
 				try {
 					String content = new String(ipfs.cat(filePointer));
@@ -176,7 +176,7 @@ public class AaltoABEUser extends AaltoABEActor {
 			}
 			return null;
 		} catch (IOException | ClassNotFoundException | DataLengthException | IllegalStateException e) {
-			System.err.println("Global parameter missmatch?: " + e.getMessage() + " " + e.getClass().getName());
+			System.err.println("Global parameter missmatch / Authenticator regenerated?: " + e.getMessage() + " " + e.getClass().getName());
 
 			
 			try {

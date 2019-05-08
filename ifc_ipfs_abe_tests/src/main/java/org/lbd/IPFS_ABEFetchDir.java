@@ -7,23 +7,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.IPFS_Logging;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 
 import fi.aalto.lbd.AaltoABEAuthenticator;
 import fi.aalto.lbd.AaltoABEUser;
+import io.ipfs.multihash.Multihash;
 
-public class IPFS_ABEFetchDir {
+public class IPFS_ABEFetchDir extends IPFS_Logging{
 	private final Property merkle_node;
+	boolean jena=true;
 
 	private final Model guid_directory_model = ModelFactory.createDefaultModel();
 	private final Model temp_model = ModelFactory.createDefaultModel();
 
 	private final AaltoABEUser user;
+	protected final int attribute_count;
 
 	public IPFS_ABEFetchDir(String directory,int attribute_count,String gp_hash) {
-		
+		this.attribute_count = attribute_count;
+		this.node = "Fetching_"+ this.attribute_count;
 		List<String> attributes = new ArrayList<>();
 		System.out.println("attributes: " + attribute_count);
 		char c = 'a';
@@ -53,7 +59,7 @@ public class IPFS_ABEFetchDir {
 				handleFile(f,attribute_count);
 			}
 		}
-		//fetch(dir_hash);
+		timelog.stream().forEach(txt -> writeToFile(txt, false));
 	}
 
 	private void handleFile(File f, int attribute_count) {
@@ -101,26 +107,56 @@ public class IPFS_ABEFetchDir {
 				});
 
 		end = System.nanoTime();
-		System.out.println("Round read in: total " + (end - start) / 1000000f + " ms");
+		System.out.println("Round " + this.attribute_count + " read in: total " + (end - start) / 1000000f
+				+ " ms hash: " + dir_hash);
+		addLog("Round " + this.attribute_count + " read in: total " + (end - start) / 1000000f
+				+ " ms hash: " + dir_hash);
 	}
 
 	private void readInNode(String key) {
-		temp_model.removeAll();
-		String content = this.user.decrypt(key);
+		if(jena)
+		  temp_model.removeAll();
+		String content=null;
+		if(this.attribute_count ==0)
+		{
+			Multihash filePointer = Multihash.fromBase58(key);
+			try {
+				content = new String(user.getIpfs().cat(filePointer));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else
+		 content = this.user.decrypt(key);
 		if(content==null)
 			return;
 		System.out.println("element:\n "+content);
 		ByteArrayInputStream bi = new ByteArrayInputStream(content.getBytes());
-		temp_model.read(bi, null, "TTL");
+		if(jena)
+		  temp_model.read(bi, null, "TTL");
 	}
 
 	private void readInGuidTable(String key) {
-		guid_directory_model.removeAll();
-		String content = this.user.decrypt(key);
+		if(jena)
+		  guid_directory_model.removeAll();
+		
+		String content=null;
+		if(this.attribute_count ==0)
+		{
+			Multihash filePointer = Multihash.fromBase58(key);
+			try {
+				content = new String(user.getIpfs().cat(filePointer));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else
+		  content = this.user.decrypt(key);
 		if(content==null)
 			return;
 		System.out.println("directory:\n "+content);
-		guid_directory_model.read(new ByteArrayInputStream(content.getBytes()), null, "TTL");
+		if(jena)
+		  guid_directory_model.read(new ByteArrayInputStream(content.getBytes()), null, "TTL");
 
 	}
 
