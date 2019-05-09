@@ -144,11 +144,11 @@ public class AaltoABEPublisher extends AaltoABEActor {
 	public class Save_result
 	{
 		public String ipfs_hash;
-		public long encryption_Size;
+		public long encryption_size;
 		public Save_result(String ipfs_hash, long encryption_Size) {
 			super();
 			this.ipfs_hash = ipfs_hash;
-			this.encryption_Size = encryption_Size;
+			this.encryption_size = encryption_Size;
 		}
 	}
 	/*

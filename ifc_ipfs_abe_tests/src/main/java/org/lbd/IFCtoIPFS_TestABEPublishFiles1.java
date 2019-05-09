@@ -73,16 +73,22 @@ public class IFCtoIPFS_TestABEPublishFiles1 extends IPFS_Logging {
 							List<MerkleNode> node = publisher.getIpfs().add(file);
 							if (node.size() > 0)
 								ipfs_hash=node.get(0).hash.toBase58();
+							end = System.nanoTime();
+							addLog("Round " + this.attribute_count + " "+size+" published in: total " + (end - start) / 1000000f + " ms hash: "
+									+ ipfs_hash+" "+ size);
 						} else
-							ipfs_hash=publisher.encrypt_save(content, this.encryption_policy.toString()).ipfs_hash;
-						;
+						{
+							AaltoABEPublisher.Save_result results=publisher.encrypt_save(content, this.encryption_policy.toString());
+						    ipfs_hash=results.ipfs_hash;
+							end = System.nanoTime();
+							addLog("Round " + this.attribute_count + " "+size+" published in: total " + (end - start) / 1000000f + " ms hash: "
+									+ ipfs_hash+" "+ results.encryption_size);
+						}
+						
 					} catch (FileNotFoundException e) {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					end = System.nanoTime();
-					addLog("Round " + this.attribute_count + " "+size+" published in: total " + (end - start) / 1000000f + " ms hash: "
-							+ ipfs_hash);
 
 					
 				}
@@ -95,12 +101,12 @@ public class IFCtoIPFS_TestABEPublishFiles1 extends IPFS_Logging {
 		System.out.println("...");
 		int start = 9;
 		for (int attribute_count = start; attribute_count >= 0; attribute_count--) {
-		
-		if (args.length > 1) {
-			IFCtoIPFS_TestABEPublishFiles1 ifc_ipfs = new IFCtoIPFS_TestABEPublishFiles1("files", attribute_count,
-					args[1]);
-			ifc_ipfs.add(args[0]);
-		}
+
+			if (args.length > 1) {
+				IFCtoIPFS_TestABEPublishFiles1 ifc_ipfs = new IFCtoIPFS_TestABEPublishFiles1("files", attribute_count,
+						args[1]);
+				ifc_ipfs.add(args[0]);
+			}
 		}
 		System.out.println("done");
 		System.exit(0);
