@@ -29,7 +29,7 @@ public class User {
 						byte[] decoded = Base64.getDecoder().decode(encoded_data.toString());
 						String msg = new String(decoded);
 						System.out.println("Message hash was: "+msg);
-						abe_user.decrypt(msg);
+						abe_user.decryptABEAES(msg);
 					}
 				});
 			} catch (Exception e) {
@@ -60,7 +60,7 @@ public class User {
 	}
 	
 	public String decrypt(String content_hash) {
-		return abe_user.decrypt(content_hash);
+		return abe_user.decryptABEAES(content_hash);
 	}
 	
 }

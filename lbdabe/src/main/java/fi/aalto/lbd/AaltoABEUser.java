@@ -138,7 +138,7 @@ public class AaltoABEUser extends AaltoABEActor {
 		return true;
 	}
 
-	public String decrypt(String content_hash) {
+	public String decryptABEAES(String content_hash) {
 
 		Multihash filePointer = Multihash.fromBase58(content_hash);
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(ipfs.cat(filePointer));
@@ -169,7 +169,6 @@ public class AaltoABEUser extends AaltoABEActor {
 					System.out.println("1. tried to decrypt: " + content);
 					System.exit(1);
 				} catch (TimeoutException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
@@ -177,17 +176,6 @@ public class AaltoABEUser extends AaltoABEActor {
 			return null;
 		} catch (IOException | ClassNotFoundException | DataLengthException | IllegalStateException e) {
 			System.err.println("Global parameter missmatch / Authenticator regenerated?: " + e.getMessage() + " " + e.getClass().getName());
-
-			
-			try {
-				String content = new String(ipfs.cat(filePointer));
-				System.out.println("2. tried to decrypt: " + content);
-				System.exit(1);
-			} catch (TimeoutException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-
 			e.printStackTrace();
 			return null;
 		} catch (MessagingException e1) {
@@ -222,6 +210,38 @@ public class AaltoABEUser extends AaltoABEActor {
 		System.out.println("castle nbytes: "+nbytes);
 		os.write(outBuff, 0, nbytes);
 	}
+	
+	public String decryptABE(String content_hash) {
+
+		Multihash filePointer = Multihash.fromBase58(content_hash);
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(ipfs.cat(filePointer));
+				ObjectInputStream oIn = new ObjectInputStream(MimeUtility.decode(bis, "base64"))) {
+
+			Ciphertext ct = Utility.readCiphertext(oIn);
+			Message m;
+			try {
+				m = DCPABE.decrypt(ct, pks, gp.get());
+			} catch (IllegalArgumentException e) {
+				System.err.println("\nDecryption was not done. Check the user attributes.");
+				return null;
+			}
+			return new String(m.getM());
+		} catch (IOException | ClassNotFoundException | DataLengthException | IllegalStateException e) {
+			System.err.println("Global parameter missmatch / Authenticator regenerated?: " + e.getMessage() + " " + e.getClass().getName());
+			e.printStackTrace();
+			return null;
+		} catch (MessagingException e1) {
+			e1.printStackTrace();
+			return null;
+		} catch (java.lang.NullPointerException e1) {
+			e1.printStackTrace();
+			return null;
+		} catch (TimeoutException e2) {
+			System.out.println("IPFS hash not found in 15 sec");
+			return null;
+		}
+	}
+
 
 	public String getName() {
 		return name;
@@ -234,7 +254,7 @@ public class AaltoABEUser extends AaltoABEActor {
 		AaltoABEUser user1 = new AaltoABEUser(AaltoABEGlobal.global_parameters_hash, "c:\\jo\\security\\");
 		user1.addKeyFile("A1_" + user1.getName() + "_a.key");
 		user1.addKeyFile("A1_" + user1.getName() + "_b.key");
-		user1.decrypt("QmR7tPquSTUka3Mb35szHwJ6Ut7BgFu91AUkqnR9xP4wdG");
+		user1.decryptABEAES("QmR7tPquSTUka3Mb35szHwJ6Ut7BgFu91AUkqnR9xP4wdG");
 	}
 
 }

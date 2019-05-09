@@ -179,7 +179,7 @@ public class IFCtoIPFS_TestABEPublishCommonWoIPFS extends IPFS_Logging {
 
 				entity_ipfs_hash ="1234";
 			} else
-				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
+				entity_ipfs_hash = publisher.encryptABEAES_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 			if (!directory_random_created) {
 				Resource directory_recource = jena_guid_directory_model.createResource(); // empty
 				Literal random_number_literal = jena_guid_directory_model
@@ -227,7 +227,7 @@ public class IFCtoIPFS_TestABEPublishCommonWoIPFS extends IPFS_Logging {
 			if (this.attribute_count == 0) {
 					return "1234";
 			} else
-				return publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
+				return publisher.encryptABEAES_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 
 		} catch (Exception e) {
 			e.printStackTrace();

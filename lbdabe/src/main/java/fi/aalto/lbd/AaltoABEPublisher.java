@@ -155,7 +155,7 @@ public class AaltoABEPublisher extends AaltoABEActor {
 	 * base64 since IPFS.add/cat does not allow binary
 	 */
 
-	public Save_result encrypt_save(String content, String policy) {
+	public Save_result encryptABEAES_save(String content, String policy) {
 		try {
 			AccessStructure arho = AccessStructure.buildFromPolicy(policy);
 			Message m = DCPABE.generateRandomMessage(gp.get());
@@ -210,6 +210,47 @@ public class AaltoABEPublisher extends AaltoABEActor {
 		os.write(outBuff, 0, nbytes);
 	}
 
+	
+	public Save_result encryptABE_save(String content, String policy) {
+		try {
+			AccessStructure arho = AccessStructure.buildFromPolicy(policy);
+			Message m = new Message(content.getBytes());
+			System.out.println("Message content "+(m.getM().length==content.length())+" "+content.length());
+			Ciphertext ct;
+			try {
+				ct = DCPABE.encrypt(m, arho, gp.get(), pks);
+			} catch (Exception e) {
+				System.err.println("Encryption was not done. Check the policy.");
+				e.printStackTrace();
+				return null;
+			}
+			
+			try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					ObjectOutputStream out = new ObjectOutputStream(MimeUtility.encode(bos, "base64"));
+
+					ByteArrayInputStream bis = new ByteArrayInputStream(content.getBytes());
+					BufferedInputStream in = new BufferedInputStream(bis);) {
+				out.writeObject(ct);
+				out.flush();
+				System.out.println("bos size: "+bos.size()+" -"+bos.toByteArray().length);
+				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", bos.toByteArray());
+				List<MerkleNode> node = ipfs.add(file);
+				if (node.isEmpty()) {
+					System.err.println("IPFS Node not created.");
+					return null;
+				}
+				System.out.println("File hash: " + node.get(0).hash.toBase58());
+				return new Save_result(node.get(0).hash.toBase58(),bos.toByteArray().length);
+				
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException | DataLengthException | IllegalStateException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static void main(String[] args) {
 
 		final String policy = "and a b";
@@ -220,7 +261,7 @@ public class AaltoABEPublisher extends AaltoABEActor {
 		// The problem here is the salt!! Every time there is a new file! Should we keep
 		// it static?
 
-		publisher.encrypt_save("Content", policy);
+		publisher.encryptABEAES_save("Content", policy);
 	}
 
 }

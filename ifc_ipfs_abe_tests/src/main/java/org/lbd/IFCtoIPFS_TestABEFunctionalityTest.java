@@ -21,10 +21,10 @@ import fi.aalto.lbd.AaltoABEUser;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 
-public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublishCommon {
+public class IFCtoIPFS_TestABEFunctionalityTest extends IFCtoIPFS_TestABEPublishCommon {
 	private final AaltoABEUser user;
 
-	public IFCtoIPFS_TestABEPublishPaddingTest(String project_name, int attribute_count, String gp_hash) {
+	public IFCtoIPFS_TestABEFunctionalityTest(String project_name, int attribute_count, String gp_hash) {
 		super(project_name, attribute_count);
 		System.out.println("attributes: " + attribute_count);
 		char c = 'a';
@@ -56,14 +56,10 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 		}
 
 	}
-	
-	private boolean directory_random_created = false;
-
 	protected String createMerkleNode(String guid, Model model, Resource guid_subject) {
 		String entity_ipfs_hash = null;
 		try {
 			RDFC14Ner r1 = new RDFC14Ner(model);
-
 			String cleaned = canonized_pattern.clean(r1.getCanonicalString());
 
 			if (this.attribute_count == 0) {
@@ -78,9 +74,9 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 					return null;
 				}
 			} else
-				entity_ipfs_hash = publisher.encryptABEAES_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
+				entity_ipfs_hash = publisher.encryptABE_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 			
-			String content = this.user.decryptABEAES(entity_ipfs_hash);
+			String content = this.user.decryptABE(entity_ipfs_hash);
 			if(!content.equals(cleaned))
 			{
 				System.err.println("Encrypted and Decrypted do not match!");
@@ -88,36 +84,6 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 			}
 			else System.out.println("Created");
 			
-			if (!directory_random_created) {
-				Resource directory_recource = jena_guid_directory_model.createResource(); // empty
-				Literal random_number_literal = jena_guid_directory_model
-						.createLiteral("" + random_number_generator.nextInt());
-				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(directory_recource,
-						this.jena_property_random, random_number_literal));
-				directory_random_created = true;
-			}
-			if (guid_subject != null) {
-				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid, "UTF-8"));
-				Literal hash_literal = jena_guid_directory_model.createLiteral(entity_ipfs_hash);
-				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(guid_resource,
-						this.jena_property_merkle_node, hash_literal));
-
-				Property hp_type = model.getProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-				RDFNode guid_class = null;
-
-				for (Statement st : guid_subject.listProperties(hp_type).toList())
-					guid_class = st.getObject();
-				Resource apache_guid_resource = jena_guid_directory_model.createResource(guid_resource.getURI());
-				if (guid_class == null) {
-					System.err.println("No GUID type.");
-					return null;
-				}
-
-				if (!guid_class.isResource())
-					return null;
-				jena_guid_directory_model
-						.add(jena_guid_directory_model.createStatement(apache_guid_resource, RDF.type, guid_class));
-			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -125,27 +91,6 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 		return entity_ipfs_hash;
 	}
 
-	protected String publishDirectoryNode2IPFS(String project_name, Model model) {
-		try {
-			RDFC14Ner r1 = new RDFC14Ner(model);
-			String cleaned = canonized_pattern.clean(r1.getCanonicalString());
-			if (this.attribute_count == 0) {
-
-				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper(project_name,
-						cleaned.getBytes());
-				List<MerkleNode> node = publisher.getIpfs().add(file);
-				if (node.size() > 0)
-					return node.get(0).hash.toBase58();
-				else
-					return null;
-			} else
-				return publisher.encryptABEAES_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 
 	public static void main(String[] args) {
 
@@ -154,7 +99,7 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 		for (int attribute_count = start; attribute_count >= 0; attribute_count--)
 			try {
 				if (args.length > 1) {
-					IFCtoIPFS_TestABEPublishPaddingTest ifc_ipfs = new IFCtoIPFS_TestABEPublishPaddingTest("2",
+					IFCtoIPFS_TestABEFunctionalityTest ifc_ipfs = new IFCtoIPFS_TestABEFunctionalityTest("2",
 							attribute_count, args[1]);
 					ifc_ipfs.add(args[0]);
 				}

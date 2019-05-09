@@ -48,7 +48,7 @@ public class IPFS_ABEFetchDir {
 
 	private void readInNode(String key) {
 		temp_model.removeAll();
-		String content = this.user.decrypt(key);
+		String content = this.user.decryptABEAES(key);
 		System.out.println("element:\n "+content);
 		ByteArrayInputStream bi = new ByteArrayInputStream(content.getBytes());
 		temp_model.read(bi, null, "TTL");
@@ -56,7 +56,7 @@ public class IPFS_ABEFetchDir {
 
 	private void readInGuidTable(String key) {
 		guid_directory_model.removeAll();
-		String content = this.user.decrypt(key);
+		String content = this.user.decryptABEAES(key);
 		if(content==null)
 			return;
 		System.out.println("directory:\n "+content);

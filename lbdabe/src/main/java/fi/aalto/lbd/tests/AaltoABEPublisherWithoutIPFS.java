@@ -40,7 +40,7 @@ public class AaltoABEPublisherWithoutIPFS extends AaltoABEPublisher {
 	}
 
 
-	public Save_result encrypt_save(String content, String policy) {
+	public Save_result encryptABEAES_save(String content, String policy) {
 		try {
 			AccessStructure arho = AccessStructure.buildFromPolicy(policy);
 			Message m = DCPABE.generateRandomMessage(gp.get());

@@ -34,12 +34,12 @@ public class Publisher {
 	}
 
 	public String encrypt(String content, String policy) {
-		String hash = publisher.encrypt_save(content, policy).ipfs_hash;
+		String hash = publisher.encryptABEAES_save(content, policy).ipfs_hash;
 		return hash;
 	}
 	
 	public String encryptAndPublish(String content, String policy) {
-		String hash = publisher.encrypt_save(content, policy).ipfs_hash;
+		String hash = publisher.encryptABEAES_save(content, policy).ipfs_hash;
 		if (hash != null) {
 			try {
 				ipfs.getIpfs().get().pubsub.pub("bim.messages",

@@ -127,7 +127,7 @@ public class IPFS_ABEFetchDir extends IPFS_Logging{
 			}
 		}
 		else
-		 content = this.user.decrypt(key);
+		 content = this.user.decryptABEAES(key);
 		if(content==null)
 			return;
 		System.out.println("element:\n "+content);
@@ -151,7 +151,7 @@ public class IPFS_ABEFetchDir extends IPFS_Logging{
 			}
 		}
 		else
-		  content = this.user.decrypt(key);
+		  content = this.user.decryptABEAES(key);
 		if(content==null)
 			return;
 		System.out.println("directory:\n "+content);

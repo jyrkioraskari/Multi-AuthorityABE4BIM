@@ -166,7 +166,7 @@ public class IFCtoIPFS_ABEPublisher {
 
 			String cleaned=canonized_pattern.clean(r1.getCanonicalString());
 			
-			String entity_ipfs_hash=publisher.encrypt_save(cleaned, this.encryption_policy).ipfs_hash;
+			String entity_ipfs_hash=publisher.encryptABEAES_save(cleaned, this.encryption_policy).ipfs_hash;
 			if (!directory_random_created) {
 				Resource directory_recource = jena_guid_directory_model.createResource(); // empty
 				Literal random_number_literal = jena_guid_directory_model
@@ -206,7 +206,7 @@ public class IFCtoIPFS_ABEPublisher {
 		try {
 			RDFC14Ner r1=new RDFC14Ner(model);
 			String cleaned=canonized_pattern.clean(r1.getCanonicalString());
-			return publisher.encrypt_save(cleaned, this.encryption_policy).ipfs_hash;
+			return publisher.encryptABEAES_save(cleaned, this.encryption_policy).ipfs_hash;
 
 		} catch (Exception e) {
 			e.printStackTrace();

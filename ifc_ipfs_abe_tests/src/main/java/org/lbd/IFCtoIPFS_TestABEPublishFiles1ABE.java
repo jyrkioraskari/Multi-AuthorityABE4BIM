@@ -14,15 +14,15 @@ import fi.aalto.lbd.AaltoABEPublisher;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 
-public class IFCtoIPFS_TestABEPublishFiles1 extends IPFS_Logging {
+public class IFCtoIPFS_TestABEPublishFiles1ABE extends IPFS_Logging {
 
 	protected AaltoABEPublisher publisher;
 	final public StringBuilder encryption_policy = new StringBuilder();
 	protected final int attribute_count;
 
-	public IFCtoIPFS_TestABEPublishFiles1(String project_name, int attribute_count, String gp_hash) {
+	public IFCtoIPFS_TestABEPublishFiles1ABE(String project_name, int attribute_count, String gp_hash) {
 		this.attribute_count = attribute_count;
-		this.node = "Publishing_" + project_name + "_" + this.attribute_count;
+		this.node = "Publishing_ABE_" + project_name + "_" + this.attribute_count;
 		List<String> attributes = new ArrayList<>();
 		System.out.println("attributes: " + attribute_count);
 		char c = 'a';
@@ -78,7 +78,7 @@ public class IFCtoIPFS_TestABEPublishFiles1 extends IPFS_Logging {
 									+ ipfs_hash+" "+ size);
 						} else
 						{
-							AaltoABEPublisher.Save_result results=publisher.encrypt_save(content, this.encryption_policy.toString());
+							AaltoABEPublisher.Save_result results=publisher.encryptABE_save(content, this.encryption_policy.toString());
 						    ipfs_hash=results.ipfs_hash;
 							end = System.nanoTime();
 							addLog("Round " + this.attribute_count + " "+size+" published in: total " + (end - start) / 1000000f + " ms hash: "
@@ -103,7 +103,7 @@ public class IFCtoIPFS_TestABEPublishFiles1 extends IPFS_Logging {
 		for (int attribute_count = start; attribute_count >= 0; attribute_count--) {
 
 			if (args.length > 1) {
-				IFCtoIPFS_TestABEPublishFiles1 ifc_ipfs = new IFCtoIPFS_TestABEPublishFiles1("files", attribute_count,
+				IFCtoIPFS_TestABEPublishFiles1ABE ifc_ipfs = new IFCtoIPFS_TestABEPublishFiles1ABE("files", attribute_count,
 						args[1]);
 				ifc_ipfs.add(args[0]);
 			}
