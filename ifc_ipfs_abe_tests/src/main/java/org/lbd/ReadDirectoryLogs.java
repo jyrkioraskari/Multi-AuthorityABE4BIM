@@ -8,9 +8,9 @@ import java.util.Scanner;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 
-public class ReadDirectory {
+public class ReadDirectoryLogs {
 
-	public ReadDirectory(String directory) {
+	public ReadDirectoryLogs(String directory) {
 
 		File curDir = new File(directory);
 		getAllFiles(curDir);
@@ -79,7 +79,7 @@ public class ReadDirectory {
 		}
 	public static void main(String[] args) {
 
-		new ReadDirectory("C:\\Users\\kiori\\OneDrive - Aalto University\\Research\\Attribute-based encyption for role based authentication for IFC-IPFS\\measurements\\4");
+		new ReadDirectoryLogs("C:\\Users\\kiori\\OneDrive - Aalto University\\Research\\Attribute-based encyption for role based authentication for IFC-IPFS\\measurements\\publishing_without_IPFS_many_authenticators");
 
 	}
 

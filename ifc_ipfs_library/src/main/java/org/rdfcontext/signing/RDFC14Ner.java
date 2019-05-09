@@ -24,6 +24,8 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  * @author Fabio Panaioli
  * 
  */
+@SuppressWarnings("rawtypes")
+
 public class RDFC14Ner  {
 		
 	/**

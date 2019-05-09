@@ -1,5 +1,6 @@
 package org.lbd;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.IPFS_Logging;
 import org.lbd.ifc.RootEntity;
 import org.lbd.rdf.CanonizedPattern;
 import org.rdfcontext.signing.RDFC14Ner;
@@ -21,57 +23,60 @@ import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-import fi.aalto.lbd.AaltoABEAuthenticator;
-import fi.aalto.lbd.AaltoABEPublisher;
-import io.ipfs.multihash.Multihash;
+import fi.aalto.lbd.tests.AaltoABEPublisherWithoutIPFS;
 
-public class IFCtoIPFS_ABEPublisher {
-	private final Model jena_guid_directory_model = ModelFactory.createDefaultModel();
-	private final Property jena_property_random;
-	private final Property jena_property_merkle_node;
+public class IFCtoIPFS_TestABEPublishCommonWoIPFS extends IPFS_Logging {	
+	protected final CanonizedPattern canonized_pattern = new CanonizedPattern();
+	protected final Random random_number_generator = new Random(System.currentTimeMillis());
+	protected final String project_name;
+	protected final String baseURI = "http://ipfs/bim/";
+
+	protected final int attribute_count;
+	protected final Model jena_guid_directory_model = ModelFactory.createDefaultModel();
+	protected final Property jena_property_random;
+	protected final Property jena_property_merkle_node;
+	protected AaltoABEPublisherWithoutIPFS publisher;
+	final public StringBuilder encryption_policy = new StringBuilder();
 
 	
-	private final String project_name;
-	private final String baseURI = "http://ipfs/bim/";
-	
-	private final CanonizedPattern canonized_pattern=new CanonizedPattern();
-	private final Random random_number_generator = new Random(System.currentTimeMillis());
-
-	private final AaltoABEPublisher publisher;
-
-	final public String encryption_policy = "and a b"; // syntax!!!
-	String[] attributes1 = { "a", "b" };
-	final AaltoABEAuthenticator authority;
-	
-	public IFCtoIPFS_ABEPublisher(String project_name) {
-		this.publisher=new AaltoABEPublisher("QmezCbZRUjwHqThpcsyF7sjNy2sjvqtCtzreetSFRywHsw");
-		this.authority= new AaltoABEAuthenticator("QmezCbZRUjwHqThpcsyF7sjNy2sjvqtCtzreetSFRywHsw", attributes1);
-		publisher.addAuthorityPublicKeys(authority.getAk().getPublicKeys());
-		
+	public IFCtoIPFS_TestABEPublishCommonWoIPFS(String project_name, int attribute_count) {
+		super();
+		this.attribute_count = attribute_count;
 		this.jena_property_random = jena_guid_directory_model.createProperty("http://ipfs/random");
 		this.jena_property_merkle_node = jena_guid_directory_model.createProperty("http://ipfs/merkle_node");
-		this.project_name=project_name;
+		this.project_name = project_name;
+
 	}
 
-
-	public void add(String ifc_file) throws InterruptedException, IOException {
+	protected void add(String ifc_file) throws InterruptedException, IOException {
+		String fn = new File(ifc_file).getName();
+		this.node = "Publishing_"+project_name+"_" + fn + "_" + this.attribute_count;
+		timelog.clear();
 		Splitted_IfcOWL ifcrdf = new Splitted_IfcOWL(ifc_file);
+		long start;
+		long end;
+		start = System.nanoTime();
 		publishEntityNodes2IPFS(ifcrdf.getEntitys(), ifcrdf.getURI2GUID_map());
-		
+
 		String project_table_hash = publishDirectoryNode2IPFS(this.project_name, jena_guid_directory_model);
-		System.out.println("Directory hash: "+project_table_hash);
+		System.out.println("Directory hash: " + project_table_hash);
+		end = System.nanoTime();
+		System.out.println("Round " + this.attribute_count + " read in: total " + (end - start) / 1000000f
+				+ " ms hash: " + project_table_hash);
+		addLog("Round " + this.attribute_count + " published in: total " + (end - start) / 1000000f + " ms hash: "
+				+ project_table_hash);
+
 		// IPNS
-		try {
-			Multihash filePointer = Multihash.fromBase58(project_table_hash);
-			@SuppressWarnings("rawtypes")
-			Map pub = publisher.getIpfs().name.publish(filePointer);
-			System.out.println(pub);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		jena_guid_directory_model.write(System.out, "TTL");
+		/*
+		 * try { Multihash filePointer = Multihash.fromBase58(project_table_hash); Map
+		 * pub = publisher.getIpfs().name.publish(filePointer); System.out.println(pub);
+		 * } catch (IOException e1) { e1.printStackTrace(); }
+		 * jena_guid_directory_model.write(System.out, "TTL");
+		 */
+		timelog.stream().forEach(txt -> writeToFile(txt, false));
+		System.out.println("added");
 	}
-	
+
 	private Map<String, Resource> resources_map = new HashMap<>();
 
 	private void publishEntityNodes2IPFS(List<RootEntity> root_entitys, Map<String, String> uri2guid) {
@@ -94,6 +99,9 @@ public class IFCtoIPFS_ABEPublisher {
 			Resource guid_subject = null;
 			Model entity_model = ModelFactory.createDefaultModel();
 			boolean random_added = false;
+			long start;
+			long end;
+			start = System.nanoTime();
 			for (Statement triple : g.getTriples()) {
 
 				String s_uri = triple.getSubject().getURI();
@@ -104,7 +112,7 @@ public class IFCtoIPFS_ABEPublisher {
 					subject = entity_model.createResource(sn);
 					guid_subject = subject;
 					resources_map.put(s_uri, subject);
-					
+
 					if (!random_added) {
 						Literal random_number_literal = entity_model
 								.createLiteral("" + random_number_generator.nextInt());
@@ -122,8 +130,7 @@ public class IFCtoIPFS_ABEPublisher {
 					}
 				}
 
-				Property property = entity_model
-						.getProperty(triple.getPredicate().getURI());
+				Property property = entity_model.getProperty(triple.getPredicate().getURI());
 				RDFNode object = triple.getObject();
 				if (object.isResource()) {
 					Resource or = resources_map.get(object.asResource().getURI());
@@ -131,8 +138,7 @@ public class IFCtoIPFS_ABEPublisher {
 						if (property.toString().equals(
 								"http://www.buildingsmart-tech.org/ifcOWL/IFC2X3_TC1#relatedObjects_IfcRelDecomposes"))
 							System.out.println("decompo: " + object.asResource().getURI());
-						char last = object.asResource().getURI()
-								.charAt(object.asResource().getURI().length() - 1);
+						char last = object.asResource().getURI().charAt(object.asResource().getURI().length() - 1);
 						if (object.asResource().getURI().contains("_") && Character.isDigit(last)) {
 							or = entity_model.createResource();
 						} else
@@ -152,21 +158,28 @@ public class IFCtoIPFS_ABEPublisher {
 				}
 
 			}
-			createMerkleNode(g.getGuid(), entity_model, guid_subject);
+			String entity_ipfs_hash = createMerkleNode(g.getGuid(), entity_model, guid_subject);
+			end = System.nanoTime();
+			addLog("File " + this.attribute_count + " published in: total " + (end - start) / 1000000f + " ms hash: "
+					+ entity_ipfs_hash);
 
 		}
 	}
-	
+
 	private boolean directory_random_created = false;
 
-
-	private void createMerkleNode(String guid, Model model, Resource guid_subject) {
+	protected String createMerkleNode(String guid, Model model, Resource guid_subject) {
+		String entity_ipfs_hash = null;
 		try {
-			RDFC14Ner r1=new RDFC14Ner(model);
+			RDFC14Ner r1 = new RDFC14Ner(model);
 
-			String cleaned=canonized_pattern.clean(r1.getCanonicalString());
-			
-			String entity_ipfs_hash=publisher.encrypt_save(cleaned, this.encryption_policy).ipfs_hash;
+			String cleaned = canonized_pattern.clean(r1.getCanonicalString());
+
+			if (this.attribute_count == 0) {
+
+				entity_ipfs_hash ="1234";
+			} else
+				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 			if (!directory_random_created) {
 				Resource directory_recource = jena_guid_directory_model.createResource(); // empty
 				Literal random_number_literal = jena_guid_directory_model
@@ -178,55 +191,47 @@ public class IFCtoIPFS_ABEPublisher {
 			if (guid_subject != null) {
 				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid, "UTF-8"));
 				Literal hash_literal = jena_guid_directory_model.createLiteral(entity_ipfs_hash);
-				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(guid_resource, this.jena_property_merkle_node, hash_literal));
+				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(guid_resource,
+						this.jena_property_merkle_node, hash_literal));
 
 				Property hp_type = model.getProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 				RDFNode guid_class = null;
-				
+
 				for (Statement st : guid_subject.listProperties(hp_type).toList())
 					guid_class = st.getObject();
 				Resource apache_guid_resource = jena_guid_directory_model.createResource(guid_resource.getURI());
-				if(guid_class==null)
-				{
+				if (guid_class == null) {
 					System.err.println("No GUID type.");
-					return;
+					return null;
 				}
 
-				if(!guid_class.isResource())
-					return;
-				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(apache_guid_resource, RDF.type, guid_class));
+				if (!guid_class.isResource())
+					return null;
+				jena_guid_directory_model
+						.add(jena_guid_directory_model.createStatement(apache_guid_resource, RDF.type, guid_class));
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return entity_ipfs_hash;
 	}
 
-	private String publishDirectoryNode2IPFS(String project_name, Model model) {
+	protected String publishDirectoryNode2IPFS(String project_name, Model model) {
 		try {
-			RDFC14Ner r1=new RDFC14Ner(model);
-			String cleaned=canonized_pattern.clean(r1.getCanonicalString());
-			return publisher.encrypt_save(cleaned, this.encryption_policy).ipfs_hash;
+			System.out.println("mode:");
+			model.write(System.out,"TTL");
+			System.out.println("mode end");
+			RDFC14Ner r1 = new RDFC14Ner(model);
+			String cleaned = canonized_pattern.clean(r1.getCanonicalString());
+			if (this.attribute_count == 0) {
+					return "1234";
+			} else
+				return publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
-	
-	
-
-	public static void main(String[] args) {
-		System.out.println("...");
-		try {
-			if(args.length>0)
-			{
-			IFCtoIPFS_ABEPublisher ifc_ipfs=new IFCtoIPFS_ABEPublisher("IFC/IPFS project");
-			 ifc_ipfs.add(args[0]);
-			}
-		} catch (InterruptedException | IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 }

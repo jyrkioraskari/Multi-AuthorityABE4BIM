@@ -78,7 +78,7 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 					return null;
 				}
 			} else
-				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString());
+				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 			
 			String content = this.user.decrypt(entity_ipfs_hash);
 			if(!content.equals(cleaned))
@@ -97,7 +97,7 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 				directory_random_created = true;
 			}
 			if (guid_subject != null) {
-				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid));
+				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid, "UTF-8"));
 				Literal hash_literal = jena_guid_directory_model.createLiteral(entity_ipfs_hash);
 				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(guid_resource,
 						this.jena_property_merkle_node, hash_literal));
@@ -139,7 +139,7 @@ public class IFCtoIPFS_TestABEPublishPaddingTest extends IFCtoIPFS_TestABEPublis
 				else
 					return null;
 			} else
-				return publisher.encrypt_save(cleaned, this.encryption_policy.toString());
+				return publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 
 		} catch (Exception e) {
 			e.printStackTrace();

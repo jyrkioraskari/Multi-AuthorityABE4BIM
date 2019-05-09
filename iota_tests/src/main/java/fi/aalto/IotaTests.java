@@ -1,10 +1,8 @@
 package fi.aalto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.iota.jota.IotaAPI;
-import org.iota.jota.dto.response.SendTransferResponse;
 import org.iota.jota.error.ArgumentException;
 import org.iota.jota.model.Transaction;
 import org.iota.jota.model.Transfer;
@@ -18,6 +16,7 @@ public class IotaTests {
 	public static void main(String[] args) {
 		String generatedSeed = SeedRandomGenerator.generateNewSeed();
 		System.out.println(generatedSeed.length());
+		@SuppressWarnings("unused")
 		String seed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ9ABCDEFGHIJKLMNOPQRSTUVWXYZ9ABCDEFGHIJKLMNOPQRSTUVWXYZ9";
 		String addr = "DO9OEM9IMNXSUITDZMUNVDZWHFLVVCJF9AFYKLTGLYYDJ9XQXHBJWJMODXWIOGQSSDYZMWKQSF9NGWFJWJQMXGWIT9";
 
@@ -84,6 +83,7 @@ public class IotaTests {
 
 	}
 
+	@SuppressWarnings("unused")
 	private static void validateTransfers(List<Transfer> transfers) {
 		// Input validation of transfers object
 		if (transfers == null || transfers.isEmpty()) {

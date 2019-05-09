@@ -37,8 +37,8 @@ import sg.edu.ntu.sce.sands.crypto.dcpabe.key.PublicKey;
 import sg.edu.ntu.sce.sands.crypto.utility.Utility;
 
 public class AaltoABEPublisher extends AaltoABEActor {
-	private File pks_file;
-	private PublicKeys pks = new PublicKeys();
+	protected File pks_file;
+	protected PublicKeys pks = new PublicKeys();
 
 	public AaltoABEPublisher(String global_parameters_hash) {
 		super(global_parameters_hash);
@@ -141,11 +141,21 @@ public class AaltoABEPublisher extends AaltoABEActor {
 		return true;
 	}
 
+	public class Save_result
+	{
+		public String ipfs_hash;
+		public long encryption_Size;
+		public Save_result(String ipfs_hash, long encryption_Size) {
+			super();
+			this.ipfs_hash = ipfs_hash;
+			this.encryption_Size = encryption_Size;
+		}
+	}
 	/*
 	 * base64 since IPFS.add/cat does not allow binary
 	 */
 
-	public String encrypt_save(String content, String policy) {
+	public Save_result encrypt_save(String content, String policy) {
 		try {
 			AccessStructure arho = AccessStructure.buildFromPolicy(policy);
 			Message m = DCPABE.generateRandomMessage(gp.get());
@@ -169,8 +179,6 @@ public class AaltoABEPublisher extends AaltoABEActor {
 
 				encryptOrDecryptPayload(aes, bis, out);
 				out.flush();
-				//System.out.println("Publish: "+bos.toString());
-				//System.exit(1);
 				NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("gp", bos.toByteArray());
 				List<MerkleNode> node = ipfs.add(file);
 				if (node.isEmpty()) {
@@ -178,7 +186,8 @@ public class AaltoABEPublisher extends AaltoABEActor {
 					return null;
 				}
 				System.out.println("File hash: " + node.get(0).hash.toBase58());
-				return node.get(0).hash.toBase58();
+				return new Save_result(node.get(0).hash.toBase58(),bos.size());
+				
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
@@ -188,7 +197,7 @@ public class AaltoABEPublisher extends AaltoABEActor {
 		return null;
 	}
 
-	private void encryptOrDecryptPayload(PaddedBufferedBlockCipher cipher, InputStream is, OutputStream os)
+	protected void encryptOrDecryptPayload(PaddedBufferedBlockCipher cipher, InputStream is, OutputStream os)
 			throws DataLengthException, IllegalStateException, InvalidCipherTextException, IOException {
 		byte[] inBuff = new byte[cipher.getBlockSize()];
 		byte[] outBuff = new byte[cipher.getOutputSize(inBuff.length)];

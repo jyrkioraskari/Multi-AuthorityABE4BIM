@@ -84,7 +84,6 @@ public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {
 	private void publishEntityNodes2IPFS(List<RootEntity> root_entitys, Map<String, String> uri2guid) {
 
 		for (RootEntity g1 : root_entitys) {
-			Resource guid_subject = null;
 			for (Statement triple : g1.getTriples()) {
 
 				String s_uri = triple.getSubject().getURI();
@@ -93,7 +92,6 @@ public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {
 				if (sg != null) {
 					String sn = s_uri.substring(0, (s_uri.lastIndexOf("/") + 1)) + sg;
 					subject = ResourceFactory.createResource(sn);
-					guid_subject = subject;
 					resources_map.put(s_uri, subject);
 				}
 			}
@@ -191,7 +189,7 @@ public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {
 					return null;
 				}
 			} else
-				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString());
+				entity_ipfs_hash = publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 			if (!directory_random_created) {
 				Resource directory_recource = jena_guid_directory_model.createResource(); // empty
 				Literal random_number_literal = jena_guid_directory_model
@@ -201,7 +199,7 @@ public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {
 				directory_random_created = true;
 			}
 			if (guid_subject != null) {
-				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid));
+				Resource guid_resource = jena_guid_directory_model.createResource(baseURI + URLEncoder.encode(guid, "UTF-8"));
 				Literal hash_literal = jena_guid_directory_model.createLiteral(entity_ipfs_hash);
 				jena_guid_directory_model.add(jena_guid_directory_model.createStatement(guid_resource,
 						this.jena_property_merkle_node, hash_literal));
@@ -243,7 +241,7 @@ public class IFCtoIPFS_TestABEPublishCommon extends IPFS_Logging {
 				else
 					return null;
 			} else
-				return publisher.encrypt_save(cleaned, this.encryption_policy.toString());
+				return publisher.encrypt_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
 
 		} catch (Exception e) {
 			e.printStackTrace();

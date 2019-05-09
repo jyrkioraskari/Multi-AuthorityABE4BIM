@@ -1,8 +1,6 @@
 package org.lbd;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
