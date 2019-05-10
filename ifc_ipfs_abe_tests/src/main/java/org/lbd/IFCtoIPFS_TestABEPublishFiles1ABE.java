@@ -14,6 +14,8 @@ import fi.aalto.lbd.AaltoABEPublisher;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 
+// Does not work
+
 public class IFCtoIPFS_TestABEPublishFiles1ABE extends IPFS_Logging {
 
 	protected AaltoABEPublisher publisher;

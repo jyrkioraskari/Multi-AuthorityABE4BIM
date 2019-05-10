@@ -21,6 +21,14 @@ import fi.aalto.lbd.AaltoABEUser;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 
+
+/* 
+ * 
+ * This shows that ABE has a block size limit that cannot be exceed.
+ * 
+ * 
+ */
+
 public class IFCtoIPFS_TestABEFunctionalityTest extends IFCtoIPFS_TestABEPublishCommon {
 	private final AaltoABEUser user;
 
@@ -75,6 +83,9 @@ public class IFCtoIPFS_TestABEFunctionalityTest extends IFCtoIPFS_TestABEPublish
 				}
 			} else
 				entity_ipfs_hash = publisher.encryptABE_save(cleaned, this.encryption_policy.toString()).ipfs_hash;
+			
+			
+			
 			
 			String content = this.user.decryptABE(entity_ipfs_hash);
 			if(!content.equals(cleaned))
